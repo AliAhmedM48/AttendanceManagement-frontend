@@ -45,6 +45,7 @@ export default function LoginForm() {
             isAuthenticated: true,
             role: data.role,
             token: data.token,
+            fullName: data.fullName,
           });
         },
       });

@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect } from "react";
+import React, { createContext, useState, useContext } from "react";
 import { jwtDecode } from "jwt-decode";
 
 const AuthContext = createContext();
@@ -11,6 +11,7 @@ const getInitialAuth = () => {
     : {
         isAuthenticated: false,
         role: null,
+        fullName: null,
         token: null,
       };
 };
@@ -35,6 +36,7 @@ export const AuthProvider = ({ children }) => {
         isAuthenticated: true,
         role: data.role || decoded?.role || null,
         token: data.token,
+        fullName: data.fullName || "null",
       };
 
       setAuth(authData);
@@ -47,16 +49,11 @@ export const AuthProvider = ({ children }) => {
     setAuth({
       isAuthenticated: false,
       role: null,
+      fullName: null,
       token: null,
     });
     localStorage.removeItem("auth");
   };
-
-  //   useEffect(() => {
-  //     const storedAuth = getInitialAuth();
-  //     setAuthState(storedAuth);
-  //     setIsLoading(false);
-  //   }, []);
 
   return (
     <AuthContext.Provider value={{ auth, login, logout, isLoading }}>
