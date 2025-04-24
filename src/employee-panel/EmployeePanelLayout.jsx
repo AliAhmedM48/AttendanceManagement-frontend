@@ -2,8 +2,10 @@ import React from "react";
 import { useAuth } from "../shared/contexts/AuthContext";
 import Sidebar from "../shared/components/Sidebar";
 import { CalendarCheck, UserCircle2, User2Icon, History } from "lucide-react";
+import { Outlet } from "react-router";
+import { ToastContainer } from "react-toastify";
 
-function EmpPanel() {
+function EmployeePanelLayout() {
   const { logout } = useAuth();
 
   const menuItems = [
@@ -25,19 +27,14 @@ function EmpPanel() {
   ];
 
   return (
-    <div className="flex h-screen">
-      <Sidebar items={menuItems} onLogout={logout} />
-      <main className="flex-1 p-6">
-        <h1 className="text-2xl font-bold mb-4">
-          Welcome to the Employee Panel
-        </h1>
-        <p className="text-gray-700">
-          Select a section from the sidebar to manage employees or attendance
-          records.
-        </p>
+    <div className="flex h-dvh">
+      <Sidebar items={menuItems} />
+      <main className="flex-1 p-0 md:p-6 overflow-auto">
+        <Outlet />
       </main>
+      <ToastContainer position="top-right" autoClose={3000} />
     </div>
   );
 }
 
-export default EmpPanel;
+export default EmployeePanelLayout;

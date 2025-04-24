@@ -4,10 +4,10 @@ import { useState, useEffect } from "react";
 import { LogOut, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 
-const Sidebar = ({ items = [], onLogout }) => {
+const Sidebar = ({ items = [] }) => {
   const [collapsed, setCollapsed] = useState(false);
-  const [isSmallScreen, setIsSmallScreen] = useState(false);
-  const { auth } = useAuth();
+  const [isSmallScreen, setIsSmallScreen] = useState(true);
+  const { auth, logout } = useAuth();
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(max-width: 768px)");
@@ -27,7 +27,7 @@ const Sidebar = ({ items = [], onLogout }) => {
       initial={{ left: 0, width: 0 }}
       animate={{ width: collapsed ? 80 : 260 }}
       transition={{ duration: 0.3 }}
-      className="h-full bg-[#1e165c] text-white shadow-2xl z-40 overflow-hidden"
+      className="h-full bg-[#1e165c] text-white shadow-2xl z-40 overflow-hidden select-none copy-prevent"
     >
       <div className="flex flex-col h-full">
         <div className="flex items-center justify-between p-4 border-b border-white/10">
@@ -40,18 +40,16 @@ const Sidebar = ({ items = [], onLogout }) => {
             <></>
           )}
 
-          {isSmallScreen && (
-            <button
-              onClick={() => setCollapsed(!collapsed)}
-              className="text-white hover:text-white/70 cursor-pointer"
-            >
-              {collapsed ? (
-                <ChevronsRight size={20} className="ml-3.5" />
-              ) : (
-                <ChevronsLeft size={20} />
-              )}
-            </button>
-          )}
+          <button
+            onClick={() => setCollapsed(!collapsed)}
+            className="text-white hover:text-white/70 cursor-pointer"
+          >
+            {collapsed ? (
+              <ChevronsRight size={20} className="ml-3.5" />
+            ) : (
+              <ChevronsLeft size={20} />
+            )}
+          </button>
         </div>
 
         <nav className="flex-1 p-4 space-y-2">
@@ -59,6 +57,7 @@ const Sidebar = ({ items = [], onLogout }) => {
             <NavLink
               key={item.label}
               to={item.path}
+              end={item.path === items[0].path}
               className={({ isActive }) =>
                 `flex items-center gap-3 px-4 py-2 rounded-xl transition-all ${
                   isActive
@@ -75,7 +74,7 @@ const Sidebar = ({ items = [], onLogout }) => {
 
         <div className="p-4 border-t border-white/10">
           <button
-            onClick={onLogout}
+            onClick={logout}
             className="flex items-center gap-2 w-full px-4 py-2 rounded-xl hover:bg-white/10 transition cursor-pointer"
           >
             <LogOut size={20} />

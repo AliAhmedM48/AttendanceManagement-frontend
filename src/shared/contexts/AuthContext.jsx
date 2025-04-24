@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext } from "react";
+import React, { createContext, useState, useContext, useEffect } from "react";
 import { jwtDecode } from "jwt-decode";
 
 const AuthContext = createContext();
@@ -13,12 +13,19 @@ const getInitialAuth = () => {
         role: null,
         fullName: null,
         token: null,
+        id: null,
       };
 };
 export const AuthProvider = ({ children }) => {
   const [auth, setAuthState] = useState(getInitialAuth);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   const [isLoading, setIsLoading] = useState(false);
+  useEffect(() => {
+    const storedAuth = getInitialAuth();
+    setAuthState(storedAuth);
+    setIsInitialized(true);
+  }, []);
 
   const setAuth = (authData) => {
     setAuthState(authData);
@@ -32,11 +39,15 @@ export const AuthProvider = ({ children }) => {
         decoded = jwtDecode(data.token);
       }
 
+      console.log("Decoded token:", decoded);
+      console.log(" Data:", data);
+
       const authData = {
         isAuthenticated: true,
         role: data.role || decoded?.role || null,
         token: data.token,
         fullName: data.fullName || "null",
+        id: data.id || decoded?.id || null,
       };
 
       setAuth(authData);
@@ -51,12 +62,15 @@ export const AuthProvider = ({ children }) => {
       role: null,
       fullName: null,
       token: null,
+      id: null,
     });
     localStorage.removeItem("auth");
   };
 
   return (
-    <AuthContext.Provider value={{ auth, login, logout, isLoading }}>
+    <AuthContext.Provider
+      value={{ auth, login, logout, isLoading, isInitialized }}
+    >
       {children}
     </AuthContext.Provider>
   );

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { ToastContainer, toast } from "react-toastify";
 import ThemeWrapper from "../shared/components/ThemeWrapper";
-import { login } from "./authService";
+import { login } from "../shared/services/authService";
 import { useNavigate } from "react-router";
 import { useAuth } from "../shared/contexts/AuthContext";
 
@@ -46,6 +46,7 @@ export default function LoginForm() {
             role: data.role,
             token: data.token,
             fullName: data.fullName,
+            id: data.id,
           });
         },
       });
