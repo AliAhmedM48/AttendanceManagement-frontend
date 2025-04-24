@@ -1,8 +1,14 @@
 export const formatDate = (dateString) => {
   if (!dateString) return "No date provided";
+
   const date = new Date(dateString);
   if (isNaN(date)) return "Invalid date format";
-  return date.toLocaleDateString();
+
+  const day = String(date.getDate()).padStart(2, "0"); // day => dd
+  const month = String(date.getMonth() + 1).padStart(2, "0"); // month => MM (months are 0-indexed)
+  const year = date.getFullYear(); // year => yyyy
+
+  return `${day}/${month}/${year}`;
 };
 
 export const formatDateTime = (dateStr) =>

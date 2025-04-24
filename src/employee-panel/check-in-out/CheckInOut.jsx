@@ -13,8 +13,6 @@ import { toTodayTime } from "../../shared/utils";
 import { appConfig } from "../../config/appConfig";
 
 function CheckInOut() {
-  console.log("render");
-
   const [checkInOutStatus, setCheckInOutStatus] = useState({
     hasCheckedIn: false,
     hasCheckedOut: false,
@@ -33,7 +31,6 @@ function CheckInOut() {
     const fetchAttendanceData = async () => {
       try {
         const todayAttendanceResponse = await getTodayAttendance(auth.token);
-        console.log("Today's attendance=>>>>>:", { todayAttendanceResponse });
 
         if (todayAttendanceResponse) {
           if (
@@ -85,12 +82,10 @@ function CheckInOut() {
 
     const interval = setInterval(() => {
       setCurrentDate(new Date());
-    }, 30000);
+    }, 1000);
 
     return () => clearInterval(interval);
   }, [auth.token]);
-
-  console.log({ todayAttendance }, { checkInOutStatus });
 
   const isWithinTimeWindow = () => {
     const now = new Date();
@@ -100,7 +95,7 @@ function CheckInOut() {
   };
 
   const handleCheckIn = async () => {
-    if (checkInOut.hasCheckedIn) {
+    if (checkInOutStatus.hasCheckedIn) {
       toast.info("You have already checked in today.");
       return;
     }
@@ -160,16 +155,18 @@ function CheckInOut() {
                 Welcome, {auth.fullName}
               </h1>
               <p className="text-xs md:text-xm lg:text-xl xl:text-2xl text-gray-600">
-                {`Please check in between ${appConfig.CheckInAllowedWindow.start} and ${appConfig.CheckInAllowedWindow.start} to start your day.`}
+                {`Please check in between ${appConfig.CheckInAllowedWindow.start} and ${appConfig.CheckInAllowedWindow.end} to start your day.`}
               </p>
             </div>
             <CheckInOutButton onClick={handleCheckIn} check="in">
               Check In
             </CheckInOutButton>
 
-            <p className="flex flex-col items-center gap-1 text-xs md:text-xm lg:text-xl text-gray-600">
-              <span>{format(currentDate, "HH:mm:ss")}</span>
-              <span>{format(currentDate, "yyyy-MM-dd")}</span>
+            <p className="flex flex-col items-center gap-1 font-semibold text-xs md:text-xm lg:text-xl text-gray-600">
+              <span className="text-base">
+                {format(currentDate, "HH:mm:ss")}
+              </span>
+              <span>{format(currentDate, "dd-MM-yyyy")}</span>
             </p>
           </div>
         ) : (

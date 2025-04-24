@@ -10,7 +10,7 @@ const Sidebar = ({ items = [] }) => {
   const { auth, logout } = useAuth();
 
   useEffect(() => {
-    const mediaQuery = window.matchMedia("(max-width: 768px)");
+    const mediaQuery = window.matchMedia("(max-width: 980px)");
     const handleResize = () => {
       setIsSmallScreen(mediaQuery.matches);
       setCollapsed(mediaQuery.matches);

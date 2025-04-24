@@ -27,7 +27,7 @@ const AttendanceTable = ({ records = [], pending = false }) => {
       name: "Status",
       cell: (row) => (
         <span
-          className={`px-3 py-1 rounded-full text-sm font-medium ${
+          className={`px-3 py-1 rounded-full text-nowrap text-xs font-medium ${
             row.checkOutTime
               ? "bg-green-100 text-green-600"
               : "bg-yellow-100 text-yellow-600"
@@ -36,6 +36,7 @@ const AttendanceTable = ({ records = [], pending = false }) => {
           {row.checkOutTime ? "Checked Out" : "Working"}
         </span>
       ),
+      center: true,
     },
   ];
 

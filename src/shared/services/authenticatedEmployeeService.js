@@ -87,7 +87,9 @@ export async function getProfile(token) {
     }
 
     const data = await response.json();
+    const blobUrl = await getSignature(token, data.signaturePath);
 
+    data.signaturePath = blobUrl;
     return data;
   } catch (error) {
     throw error;
