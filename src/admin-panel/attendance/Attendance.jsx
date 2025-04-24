@@ -1,142 +1,101 @@
-import React, { useState, useEffect } from "react";
-import { formatDateTime } from "../../shared/utils";
-import { fetchAttendances } from "../../shared/services/attendanceService";
+import { motion } from "framer-motion";
+import "./style.css"; // تأكد من استيراد CSS بشكل صحيح
 
 function Attendance() {
-  const [attendanceRecords, setAttendanceRecords] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [weeklyHours, setWeeklyHours] = useState({});
-  const [attendanceTrends, setAttendanceTrends] = useState({});
-
-  useEffect(() => {
-    async function loadAttendanceRecords() {
-      try {
-        const data = await fetchAttendances();
-        setAttendanceRecords(data);
-        calculateWeeklyHours(data); // حساب ساعات العمل الأسبوعية
-        calculateTrends(data); // حساب الاتجاهات أو الملخصات
-      } catch (error) {
-        console.error("Error loading attendance records:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadAttendanceRecords();
-  }, []);
-
-  // حساب ساعات العمل الأسبوعية لكل موظف
-  const calculateWeeklyHours = (records) => {
-    const weeklyHours = {};
-    records.forEach((record) => {
-      const { employeeId, checkInTime, checkOutTime } = record;
-      if (checkInTime && checkOutTime) {
-        const checkIn = new Date(checkInTime);
-        const checkOut = new Date(checkOutTime);
-        const hoursWorked = (checkOut - checkIn) / (1000 * 60 * 60); // حساب الفرق بالساعة
-        if (!weeklyHours[employeeId]) {
-          weeklyHours[employeeId] = 0;
-        }
-        weeklyHours[employeeId] += hoursWorked;
-      }
-    });
-    setWeeklyHours(weeklyHours);
-  };
-
-  // حساب الاتجاهات أو الملخصات مثل عدد الأيام التي حضر فيها الموظف
-  const calculateTrends = (records) => {
-    const trends = {};
-    records.forEach((record) => {
-      const { employeeId, checkInTime, checkOutTime } = record;
-      if (!trends[employeeId]) {
-        trends[employeeId] = { totalDays: 0, lateDays: 0 };
-      }
-      trends[employeeId].totalDays += 1;
-      const checkIn = new Date(checkInTime);
-      const lateThreshold = new Date(checkIn.setHours(9, 0, 0)); // تحديد الساعة 9 صباحًا على أنها بداية اليوم
-      if (new Date(checkInTime) > lateThreshold) {
-        trends[employeeId].lateDays += 1;
-      }
-    });
-    setAttendanceTrends(trends);
-  };
-
-  const columns = [
-    { name: "Employee Name", selector: (row) => row.employee.fullName },
-    { name: "Date", selector: (row) => formatDateTime(row.checkInTime) },
-    { name: "Check In", selector: (row) => formatDateTime(row.checkInTime) },
-    {
-      name: "Check Out",
-      selector: (row) =>
-        row.checkOutTime ? formatDateTime(row.checkOutTime) : "N/A",
-    },
-    {
-      name: "Hours Worked",
-      selector: (row) => {
-        const checkIn = new Date(row.checkInTime);
-        const checkOut = new Date(row.checkOutTime);
-        return (checkOut - checkIn) / (1000 * 60 * 60); // Return hours worked
-      },
-    },
-  ];
-
-  if (loading) {
-    return <div>Loading attendance records...</div>;
-  }
-
   return (
-    <div>
-      <h2 className="text-xl font-semibold mb-2">Attendance Tracking</h2>
-      <p className="text-gray-700 mb-4">
-        Track and view employee attendance records.
-      </p>
+    <>
+      <main
+        style={{
+          minHeight: "calc(100dvh - 48px)",
+          minWidth: "calc(100dvw - 500px)",
+        }}
+        className="flex-1 flex items-stretch lg:items-center justify-center min-w-full text-white lg:p-6"
+      >
+        <motion.div
+          className="relative bg-gradient-to-br from-[#1e165c] to-[#3d2c91] bg-opacity-10 p-10 rounded-2xl shadow-2xl text-center lg:max-w-3xl xl:max-w-[98%] lg:px-28"
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1 }}
+        >
+          {/* النص المتحرك */}
+          <motion.h1
+            className="text-xl cursor-crosshair select-none md:text-3xl lg:text-4xl xl:text-7xl w-full font-bold mb-4 xl:py-12 lg:mb-8 bg-clip-text text-white bg-gradient-to-r from-[#ff0000] via-[#11ff00] to-[#002ee8] animate-gradient p-4"
+            animate={{
+              backgroundPosition: [
+                "0% 10% 20% 30% 40% 50%",
+                "100% 90% 80% 70% 60% 50%",
+                "0% 50%",
+              ],
+              scale: [1, 1.1, 1],
+            }}
+            transition={{
+              duration: 1,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          >
+            <motion.span
+              className="word"
+              whileHover={{
+                x: -80,
+                y: -20,
+                scale: 1.5,
+                rotate: -80,
+                transition: { duration: 0.1, stiffness: 900 },
+              }}
+            >
+              Page
+            </motion.span>{" "}
+            <motion.span
+              className="word"
+              whileHover={{
+                x: 80,
+                y: 10,
+                scale: 0.6,
+                rotate: 50,
+                transition: { duration: 0.1, stiffness: 900 },
+              }}
+            >
+              Under
+            </motion.span>{" "}
+            <motion.span
+              className="word"
+              whileHover={{
+                x: -70,
+                y: -30,
+                scale: 1.5,
+                rotate: -95,
+                transition: { duration: 0.1, stiffness: 900 },
+              }}
+            >
+              Construction
+            </motion.span>
+          </motion.h1>
 
-      <div className="mb-4">
-        <h3 className="text-lg font-semibold">Weekly Hours Summary</h3>
-        <ul>
-          {Object.entries(weeklyHours).map(([employeeId, hours]) => (
-            <li key={employeeId}>
-              Employee {employeeId}: {hours.toFixed(2)} hours this week
-            </li>
-          ))}
-        </ul>
-      </div>
+          {/* النص الآخر */}
+          <motion.p
+            className="text-sm md:text-lg mb-6 border-t-4 border-b-4 border-white p-4"
+            initial={{ opacity: 1 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1, duration: 2 }}
+          >
+            We're currently working on this page to bring you something amazing.
+            Please check back soon!
+          </motion.p>
 
-      <div className="mb-4">
-        <h3 className="text-lg font-semibold">Attendance Trends</h3>
-        <ul>
-          {Object.entries(attendanceTrends).map(([employeeId, trends]) => (
-            <li key={employeeId}>
-              Employee {employeeId}: {trends.totalDays} days, {trends.lateDays}{" "}
-              late days
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      <table className="table-auto w-full">
-        <thead>
-          <tr>
-            {columns.map((column) => (
-              <th key={column.name} className="border px-4 py-2">
-                {column.name}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {attendanceRecords.map((record) => (
-            <tr key={record.id}>
-              {columns.map((column) => (
-                <td key={column.name} className="border px-4 py-2">
-                  {column.selector(record)}
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+          <motion.blockquote
+            className="italic text-sm md:text-base text-white/80 border-l-4 border-white pl-4 bg-black/40 shadow-lg p-4"
+            animate={{
+              opacity: [0.7, 1, 0.7],
+            }}
+            transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
+          >
+            “Great things are not done by impulse, but by a series of small
+            things brought together.” — Vincent van Gogh
+          </motion.blockquote>
+        </motion.div>
+      </main>
+    </>
   );
 }
 
