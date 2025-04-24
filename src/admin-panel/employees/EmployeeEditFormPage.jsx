@@ -2,26 +2,26 @@ import React, { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router";
 import EmployeeForm from "./EmployeeForm";
 import { useAuth } from "../../shared/contexts/AuthContext";
-import { updateEmployee } from "../../shared/services/employeeService";
 import { toast } from "react-toastify";
+import { updateEmployee } from "../../shared/services/employeeService";
 
 function EmployeeEditFormPage() {
   const location = useLocation();
   const employee = location.state?.employee;
   const navigate = useNavigate();
-
   const { auth } = useAuth();
-  if (!auth.token) {
-    navigate("/login");
-    return null;
-  }
 
   const handleSubmit = async (formData) => {
-    try {
-      const employee = await updateEmployee(formData.id, formData, auth.token);
-      console.log("Employee updated successfully:", employee);
-      toast.success("Employee updated successfully.");
+    console.log("from edit page", { formData });
 
+    try {
+      const updatedEmployee = await updateEmployee(
+        formData.id,
+        formData,
+        auth.token
+      );
+      console.log("Employee updated successfully:", updatedEmployee);
+      toast.success("Employee updated successfully.");
       navigate("/admin-panel/employees");
     } catch (error) {
       console.error("Failed to update employee:", error);

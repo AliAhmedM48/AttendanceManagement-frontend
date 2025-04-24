@@ -45,34 +45,75 @@ export async function deleteEmployee(id, token) {
 }
 
 export const createEmployee = async (employeeData, token) => {
+  console.log({ employeeData });
+  console.log({ token });
+
+  const formData = new FormData();
+  formData.append("firstName", employeeData.firstName);
+  formData.append("lastName", employeeData.lastName);
+  formData.append("phoneNumber", employeeData.phoneNumber);
+  formData.append("email", employeeData.email);
+  formData.append("password", employeeData.password);
+  formData.append("nationalId", employeeData.nationalId);
+
+  if (employeeData.signatureFile) {
+    formData.append("signature", employeeData.signatureFile);
+  }
+
   try {
     const response = await fetch(API_ENDPOINTS.EMPLOYEES.CREATE, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify(employeeData),
+      body: formData,
     });
+
     const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.message || "Failed to create employee.");
+    }
+    console.log({ response });
+
     return data;
   } catch (error) {
     console.error("Error creating employee:", error);
     throw new Error("Unable to create employee");
   }
 };
-
 export const updateEmployee = async (id, employeeData, token) => {
+  const formData = new FormData();
+
+  // Append employee data
+  formData.append("firstName", employeeData.firstName);
+  formData.append("lastName", employeeData.lastName);
+  formData.append("email", employeeData.email);
+  formData.append("phoneNumber", employeeData.phoneNumber);
+  formData.append("nationalId", employeeData.nationalId);
+  if (employeeData.signatureFile) {
+    formData.append("signature", employeeData.signatureFile);
+  }
+  if (employeeData.password) {
+    formData.append("password", employeeData.password);
+  }
+
+  console.log({ employeeData });
+  formData.forEach((value, key) => console.log(key, value));
+
   try {
     const response = await fetch(API_ENDPOINTS.EMPLOYEES.UPDATE(id), {
       method: "PUT",
       headers: {
-        "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify(employeeData),
+      body: formData,
     });
+
     const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.message || "Failed to update employee.");
+    }
+
     return data;
   } catch (error) {
     console.error("Error updating employee:", error);

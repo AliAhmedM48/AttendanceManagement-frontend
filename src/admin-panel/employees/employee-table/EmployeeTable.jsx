@@ -30,6 +30,8 @@ const EmployeeTable = ({ employees, columns, pending }) => {
       data={employees}
       pending={pending}
       rowsPerPage={10}
+      rowsPerPageOptions={[5, 7, 10, 15]}
+      centerTitle
     />
   );
 };

@@ -1,8 +1,19 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { TextField, Button } from "@mui/material";
 import { useNavigate } from "react-router";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
+import { getSignature } from "../../shared/services/authenticatedEmployeeService";
+import { useAuth } from "../../shared/contexts/AuthContext";
+
+const fields = [
+  { label: "First Name", name: "firstName" },
+  { label: "Last Name", name: "lastName" },
+  { label: "Phone Number", name: "phoneNumber" },
+  { label: "Email", name: "email", type: "email" },
+  { label: "Password", name: "password", type: "password" },
+  { label: "National ID", name: "nationalId" },
+];
 
 export default function EmployeeForm({
   onSubmit,
@@ -16,31 +27,50 @@ export default function EmployeeForm({
     email: "",
     password: "",
     nationalId: "",
-    signaturePath: "",
+    signaturePath: null,
+    signatureFile: null,
   });
 
+  const fileInputRef = useRef(null);
+  const { auth } = useAuth();
   const navigate = useNavigate();
 
-  const fields = [
-    { label: "First Name", name: "firstName" },
-    { label: "Last Name", name: "lastName" },
-    { label: "Phone Number", name: "phoneNumber" },
-    { label: "Email", name: "email", type: "email" },
-    { label: "Password", name: "password", type: "password" },
-    { label: "National ID", name: "nationalId" },
-    { label: "Signature Path", name: "signaturePath" },
-  ];
-
+  console.log("token", auth.token, "formdata from form component", formData);
   useEffect(() => {
-    if (initialData) {
-      setFormData(initialData);
-    }
+    const fetchSignature = async () => {
+      try {
+        const signatureblob = await getSignature(
+          auth.token,
+          initialData.signaturePath
+        );
+        setFormData((prev) => ({
+          ...prev,
+          ...initialData,
+          signaturePath: signatureblob,
+        }));
+      } catch (error) {
+        console.error("Error fetching signature:", error);
+      }
+    };
+    fetchSignature();
   }, [initialData]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFormData((prev) => ({
+        ...prev,
+        signaturePath: URL.createObjectURL(file),
+        signatureFile: file,
+      }));
+    }
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -51,38 +81,19 @@ export default function EmployeeForm({
       ])
     );
 
-    if (!trimmedData.firstName) {
-      toast.error("First Name is required.");
-      return;
-    }
-
-    if (!trimmedData.lastName) {
-      toast.error("Last Name is required.");
-      return;
-    }
-
-    if (!/^\d{11}$/.test(trimmedData.phoneNumber)) {
-      toast.error("Phone number must be exactly 11 digits.");
-      return;
-    }
-
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedData.email)) {
-      toast.error("Invalid email address.");
-      return;
-    }
-
-    if (mode === "create" && trimmedData.password.length < 6) {
-      toast.error("Password must be at least 6 characters.");
-      return;
-    }
-
-    if (!/^\d{14}$/.test(trimmedData.nationalId)) {
-      toast.error("National ID must be exactly 14 digits.");
-      return;
-    }
+    if (!trimmedData.firstName) return toast.error("First Name is required.");
+    if (!trimmedData.lastName) return toast.error("Last Name is required.");
+    if (!/^\d{11}$/.test(trimmedData.phoneNumber))
+      return toast.error("Phone number must be exactly 11 digits.");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedData.email))
+      return toast.error("Invalid email address.");
+    if (mode === "create" && trimmedData.password.length < 6)
+      return toast.error("Password must be at least 6 characters.");
+    if (!/^\d{14}$/.test(trimmedData.nationalId))
+      return toast.error("National ID must be exactly 14 digits.");
 
     onSubmit(trimmedData);
-    console.log("Form submitted", trimmedData);
+    console.log("Submitted data:", { trimmedData });
   };
 
   const handleCancel = () => {
@@ -103,11 +114,9 @@ export default function EmployeeForm({
           {fields.slice(0, 2).map((field) => (
             <FormInput
               key={field.name}
-              label={field.label}
-              name={field.name}
+              {...field}
               value={formData[field.name]}
               onChange={handleChange}
-              type={field.type || "text"}
             />
           ))}
         </div>
@@ -115,32 +124,55 @@ export default function EmployeeForm({
         {fields.slice(2).map((field) => (
           <FormInput
             key={field.name}
-            label={field.label}
-            name={field.name}
+            {...field}
             value={formData[field.name]}
             onChange={handleChange}
-            type={field.type || "text"}
           />
         ))}
 
-        <div className="flex gap-4">
-          <motion.div
-            className="w-full"
-            initial={{ scale: 0.9 }}
-            animate={{ scale: 1 }}
-            whileHover={{ scale: 1.05 }} // عندما يمر الماوس على الزر
-            transition={{ type: "spring", stiffness: 300 }}
+        <div className="mt-6">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Signature Image
+          </label>
+          {formData.signaturePath && (
+            <div className="mt-4 text-center">
+              <img
+                src={formData?.signaturePath}
+                alt="Signature Preview"
+                className="w-48 h-auto mx-auto border rounded shadow my-4"
+              />
+            </div>
+          )}
+          <div
+            onClick={() => fileInputRef.current.click()}
+            className="flex justify-center items-center h-40 text-gray-500 bg-gray-50 border border-dashed rounded-lg cursor-pointer hover:bg-gray-100 transition"
           >
+            <p className="text-center text-md px-4">
+              {formData.signaturePath
+                ? "Click to update your signature"
+                : "No signature uploaded. Click to upload one."}
+            </p>
+          </div>
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            className="hidden"
+          />
+        </div>
+
+        <div className="flex gap-4 mt-6">
+          <motion.div className="w-full" whileHover={{ scale: 1.05 }}>
             <Button
               type="submit"
               variant="contained"
               fullWidth
-              className="hover:scale-101"
               sx={{
-                marginTop: 3,
                 backgroundColor: "#1e165c",
                 "&:hover": { backgroundColor: "#0a9d81" },
-                paddingY: 1.5,
+                py: 1.5,
                 fontWeight: "bold",
                 borderRadius: "30px",
               }}
@@ -149,24 +181,16 @@ export default function EmployeeForm({
             </Button>
           </motion.div>
 
-          <motion.div
-            className="w-full"
-            initial={{ scale: 0.9 }}
-            animate={{ scale: 1 }}
-            whileHover={{ scale: 1.05 }} // عندما يمر الماوس على الزر
-            transition={{ type: "spring", stiffness: 300 }}
-          >
+          <motion.div className="w-full" whileHover={{ scale: 1.05 }}>
             <Button
               onClick={handleCancel}
-              className="hover:scale-101"
               type="button"
               variant="contained"
               fullWidth
               sx={{
-                marginTop: 3,
                 backgroundColor: "red",
-                "&:hover": { backgroundColor: "red" },
-                paddingY: 1.5,
+                "&:hover": { backgroundColor: "darkred" },
+                py: 1.5,
                 fontWeight: "bold",
                 borderRadius: "30px",
               }}

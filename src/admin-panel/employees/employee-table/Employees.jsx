@@ -64,6 +64,8 @@ function Employees() {
   }, [auth.token]);
 
   const handleEdit = (employee) => {
+    console.log("Employee to edit:", { employee });
+
     navigate(`/admin-panel/employees/${employee.id}/edit`, {
       state: { employee },
     });
@@ -158,24 +160,21 @@ function Employees() {
         return age;
       },
       sortable: true,
-      width: "fit-content",
     },
     {
       name: "Gender",
       selector: (row) => row.gender || "N/A",
       sortable: true,
-      width: "fit-content",
     },
     {
       name: "Governorate",
       selector: (row) => row.governorate || "N/A",
       sortable: true,
-      width: "fit-content",
     },
     {
       name: "Signature",
       selector: (row) =>
-        signaturePathList && signaturePathList[row.id] ? (
+        signaturePathList && signaturePathList[row.id] != null ? (
           <img
             src={signaturePathList[row.id]}
             alt="Signature"
@@ -185,20 +184,17 @@ function Employees() {
           "N/A"
         ),
       sortable: false,
-      width: "fit-content",
     },
     {
       name: "Created At",
       selector: (row) =>
         row.createdAt ? formatDateTime(row.createdAt) : "N/A",
       sortable: true,
-      width: "fit-content",
     },
     {
       name: "Updated At",
       selector: (row) => (row.updatedAt ? formatDateTime(row.updatedAt) : "—"),
       sortable: true,
-      width: "fit-content",
     },
     {
       name: "Actions",
@@ -217,30 +213,28 @@ function Employees() {
         </div>
       ),
       ignoreRowClick: true,
-      width: "fit-content",
     },
   ];
+  console.log({ employees });
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold">Employees</h2>
+    <div className="min-h-full md:bg-gradient-to-br md:from-[#1e165c] md:to-[#3d2c91]  md:rounded-xl md:shadow-lg flex flex-col items-center justify-start gap-8 pt-0 md:pt-6 md:p-6">
+      <div className="flex flex-col justify-start items-end gap-8 w-full">
         <NavLink
           to={"/admin-panel/employees/create"}
-          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 flex items-center gap-2 cursor-pointer"
+          className="md:bg-white bg-green-600 md:text-[#3d2c91] text-white px-4 py-2 rounded  flex items-center gap-2 cursor-pointer hover:scale-110 transition-all hover:text-white hover:bg-green-500"
         >
           <UserPlus size={18} />
           <span className="hidden sm:inline">Create New Employee</span>
         </NavLink>
+
+        <EmployeeFilters
+          filters={filters}
+          onChange={setFilters}
+          governorates={[...new Set(employees.map((e) => e.governorate))]}
+          disabled={employees.length === 0}
+        />
       </div>
-
-      <EmployeeFilters
-        filters={filters}
-        onChange={setFilters}
-        governorates={[...new Set(employees.map((e) => e.governorate))]}
-        disabled={employees.length === 0}
-      />
-
       <EmployeeTable
         employees={filteredItems}
         columns={columns}

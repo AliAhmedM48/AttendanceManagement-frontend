@@ -7,16 +7,19 @@ import { toast } from "react-toastify";
 function EmployeeCreateFormPage() {
   const navigate = useNavigate();
   const { auth } = useAuth();
+
   if (!auth.token) {
     navigate("/login");
     return null;
   }
+
   const handleSubmit = async (formData) => {
+    console.log("from create page", { formData });
+
     try {
       const employee = await createEmployee(formData, auth.token);
       console.log("Employee created successfully:", employee);
       toast.success("Employee created successfully.");
-
       navigate("/admin-panel/employees");
     } catch (error) {
       console.error("Failed to create employee:", error);
