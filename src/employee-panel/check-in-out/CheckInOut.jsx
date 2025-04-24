@@ -33,28 +33,47 @@ function CheckInOut() {
     const fetchAttendanceData = async () => {
       try {
         const todayAttendanceResponse = await getTodayAttendance(auth.token);
-        console.log("Today's attendance=>>>>>:", todayAttendance);
+        console.log("Today's attendance=>>>>>:", { todayAttendanceResponse });
 
         if (todayAttendanceResponse) {
           if (
             todayAttendanceResponse.checkInTime &&
+            todayAttendanceResponse.checkOutTime &&
+            isSameDay(
+              new Date(currentDate),
+              new Date(todayAttendanceResponse.checkInTime)
+            ) &&
+            isSameDay(
+              new Date(currentDate),
+              new Date(todayAttendanceResponse.checkOutTime)
+            )
+          ) {
+            setCheckInOutStatus({ hasCheckedIn: true, hasCheckedOut: true });
+            setTodayAttendance({
+              id: todayAttendanceResponse.id,
+              employeeId: todayAttendanceResponse.employeeId,
+              checkInTime: todayAttendanceResponse.checkInTime,
+              checkOutTime: todayAttendanceResponse.checkOutTime,
+              totalWorkedHours: todayAttendanceResponse.totalWorkedHours,
+            });
+          }
+
+          if (
+            todayAttendanceResponse.checkInTime &&
+            todayAttendanceResponse.checkOutTime === null &&
             isSameDay(
               new Date(currentDate),
               new Date(todayAttendanceResponse.checkInTime)
             )
           ) {
-            setTodayAttendance(todayAttendanceResponse);
-            setCheckInOutStatus((pre) => ({ ...pre, hasCheckedIn: true }));
-          }
-
-          if (
-            todayAttendance.checkOutTime &&
-            isSameDay(
-              new Date(currentDate),
-              new Date(todayAttendance.checkOutTime)
-            )
-          ) {
-            setCheckInOutStatus((pre) => ({ ...pre, hasCheckedOut: true }));
+            setTodayAttendance({
+              id: todayAttendanceResponse.id,
+              employeeId: todayAttendanceResponse.employeeId,
+              checkInTime: todayAttendanceResponse.checkInTime,
+              checkOutTime: todayAttendanceResponse.checkOutTime,
+              totalWorkedHours: todayAttendanceResponse.totalWorkedHours,
+            });
+            setCheckInOutStatus({ hasCheckedIn: true, hasCheckedOut: false });
           }
         }
       } catch (err) {
@@ -70,6 +89,8 @@ function CheckInOut() {
 
     return () => clearInterval(interval);
   }, [auth.token]);
+
+  console.log({ todayAttendance }, { checkInOutStatus });
 
   const isWithinTimeWindow = () => {
     const now = new Date();
@@ -108,7 +129,7 @@ function CheckInOut() {
   const handleCheckOut = async () => {
     try {
       const now = new Date();
-      const response = await checkOutAttendance(attendanceId, auth.token);
+      const response = await checkOutAttendance(todayAttendance.id, auth.token);
       if (!response) {
         toast.error(
           "Unable to check out at the moment. Please try again later."
@@ -123,6 +144,8 @@ function CheckInOut() {
       setCheckInOutStatus((pre) => ({ ...pre, hasCheckedOut: true }));
       toast.success("Check-out successful");
     } catch (err) {
+      console.log("Error checking out", err);
+
       toast.error("Unable to check out at the moment. Please try again later.");
     }
   };
@@ -163,11 +186,11 @@ function CheckInOut() {
                 Hi, {auth.fullName}
               </h2>
 
-              <div className="flex justify-between items-center text-base md:text-xl lg:text-2xl mb-4 text-neutral-400 p-6 pb-2 border-b border-neutral-200 rounded-lg">
+              <div className="flex justify-between w-full  items-end text-base md:text-lg lg:text-xl text-neutral-400 px-2 py-4 border-b border-neutral-200 rounded-lg">
                 <h3>Hours Collected Today:</h3>
-                <p>
+                <p className="font-semibold text-red-300 text-base ">
                   {checkInOutStatus.hasCheckedOut
-                    ? format(todayAttendance.totalWorkedHours, "HH:mm")
+                    ? format(todayAttendance.totalWorkedHours, "HH'h' mm'm")
                     : "Pending Check-out"}
                 </p>
               </div>
@@ -204,12 +227,15 @@ function CheckInOut() {
                 ) : (
                   <div className="flex flex-col items-stretch  w-full gap-2">
                     <h3 className="text-xl lg:text-2xl">Check Out</h3>
-                    <div className="flex flex-col lg:flex-row gap-2 justify-between items-start lg:items-center">
-                      <p className="text-neutral-400 text-xs md:text-sm">
+                    <div className="flex flex-col text-neutral-400 justify-center items-start">
+                      <p className=" text-xs md:text-sm">
                         Do not forget to check out before leaving your office.
                       </p>
-                      <p className="text-neutral-400 text-left md: text-xs md:text-sm">
-                        {`Work Ends at ${appConfig.CheckOutAllowedWindow.start}`}
+                      <p className=" text-left md: text-xs md:text-sm">
+                        {`Check-out available from ${format(
+                          toTodayTime(appConfig.CheckOutAllowedWindow.start),
+                          "HH:mm"
+                        )}`}
                       </p>
                     </div>
                   </div>

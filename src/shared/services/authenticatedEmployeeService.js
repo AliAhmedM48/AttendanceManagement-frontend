@@ -15,6 +15,7 @@ export async function getTodayAttendance(token) {
 
     const contentType = response.headers.get("content-type");
     const text = await response.text();
+    console.log("text from getTodayAttendance", text);
 
     if (!response.ok) {
       throw new Error(text || "Failed to fetch today's attendance.");
@@ -24,7 +25,10 @@ export async function getTodayAttendance(token) {
       throw new Error("Unexpected response format. Expected JSON.");
     }
 
-    return JSON.parse(text);
+    const data = JSON.parse(text);
+    console.log("data from getTodayAttendance", data);
+
+    return data;
   } catch (error) {
     console.error("Get today attendance error:", error);
     throw error;
